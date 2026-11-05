@@ -47,15 +47,16 @@ write() {
   fi
 }
 
-visibility=$(gh api "repos/$repo" --jq .visibility)
+meta=$(gh api "repos/$repo" --jq '.visibility + " " + .default_branch')
+read -r visibility default_branch <<<"$meta"
 echo "Applying to $repo ($visibility)"
 
 echo "Repo settings"
-write -X PATCH "repos/$repo" --input "$root/settings/repo.json"
+write -X PATCH "repos/$repo" --input - <"$root/settings/repo.json"
 
 echo "Actions policies"
-write -X PUT "repos/$repo/actions/permissions" --input "$root/settings/actions-permissions.json"
-write -X PUT "repos/$repo/actions/permissions/workflow" --input "$root/settings/actions-workflow-permissions.json"
+write -X PUT "repos/$repo/actions/permissions" --input - <"$root/settings/actions-permissions.json"
+write -X PUT "repos/$repo/actions/permissions/workflow" --input - <"$root/settings/actions-workflow-permissions.json"
 
 echo "Security"
 write -X PUT "repos/$repo/vulnerability-alerts"
@@ -68,10 +69,23 @@ if [[ $visibility == public ]]; then
 fi
 
 echo "Rulesets"
-if ! existing=$(gh api "repos/$repo/rulesets?per_page=100" --jq '.[] | "\(.id)\t\(.name)"' 2>&1); then
-  # Private repos need GitHub Pro (personal) or Team (org) for rulesets.
-  echo "Skipping rulesets: $existing" >&2
-  exit 0
+err=$(mktemp)
+trap 'rm -f "$err"' EXIT
+if ! existing=$(gh api "repos/$repo/rulesets?per_page=100&includes_parents=false" \
+  --jq '.[] | "\(.id)\t\(.name)"' 2>"$err"); then
+  if grep -q 'Upgrade to GitHub Pro' "$err"; then
+    # Private repos need GitHub Pro (personal) or Team (org) for rulesets.
+    echo "Skipping rulesets: this plan doesn't support them on private repos." >&2
+    exit 0
+  fi
+  cat "$err" >&2
+  exit 1
+fi
+
+# "Main: Block Creation" would stop the default branch from ever being created.
+if ! gh api --silent "repos/$repo/branches/$default_branch" 2>/dev/null; then
+  echo "No $default_branch branch yet: push an initial commit, then re-run." >&2
+  exit 1
 fi
 
 checks_json=""
@@ -93,7 +107,7 @@ for file in "$root"/rulesets/*.json; do
     body=${body/'"required_status_checks": []'/"\"required_status_checks\": [$checks_json]"}
   fi
 
-  id=$(awk -F '\t' -v name="$name" '$2 == name { print $1 }' <<<"$existing")
+  id=$(awk -F '\t' -v name="$name" '$2 == name { print $1; exit }' <<<"$existing")
   if [[ -n $id ]]; then
     echo "  Updating $name"
     write -X PUT "repos/$repo/rulesets/$id" --input - <<<"$body"
