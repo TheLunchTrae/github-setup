@@ -73,7 +73,7 @@ err=$(mktemp)
 trap 'rm -f "$err"' EXIT
 if ! existing=$(gh api "repos/$repo/rulesets?per_page=100&includes_parents=false" \
   --jq '.[] | "\(.id)\t\(.name)"' 2>"$err"); then
-  if grep -q 'Upgrade to GitHub Pro' "$err"; then
+  if grep -q 'Upgrade to GitHub' "$err"; then
     # Private repos need GitHub Pro (personal) or Team (org) for rulesets.
     echo "Skipping rulesets: this plan doesn't support them on private repos." >&2
     exit 0
