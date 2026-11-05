@@ -8,6 +8,5 @@
   "allow_update_branch": true,
   "delete_branch_on_merge": true,
   "web_commit_signoff_required": true,
-  "has_projects": false,
-  "has_discussions": false
+  "has_projects": false
 }
