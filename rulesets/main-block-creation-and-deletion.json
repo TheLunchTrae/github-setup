@@ -1,5 +1,5 @@
 {
-  "name": "Main: Block Creation",
+  "name": "Main: Block Creation and Deletion",
   "target": "branch",
   "enforcement": "active",
   "bypass_actors": [],
@@ -10,6 +10,7 @@
     }
   },
   "rules": [
-    { "type": "creation" }
+    { "type": "creation" },
+    { "type": "deletion" }
   ]
 }
