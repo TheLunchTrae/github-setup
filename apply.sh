@@ -82,7 +82,7 @@ if ! existing=$(gh api "repos/$repo/rulesets?per_page=100&includes_parents=false
   exit 1
 fi
 
-# "Main: Block Creation" would stop the default branch from ever being created.
+# "Main: Block Creation and Deletion" would stop the default branch from ever being created.
 if ! gh api --silent "repos/$repo/branches/$default_branch" 2>/dev/null; then
   echo "No $default_branch branch yet: push an initial commit, then re-run." >&2
   exit 1
