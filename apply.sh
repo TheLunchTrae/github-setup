@@ -104,6 +104,7 @@ if $npm; then
 fi
 
 for file in "${files[@]}"; do
+  [[ -e $file ]] || continue
   body=$(<"$file")
   name=$(sed -n 's/^  "name": "\(.*\)",$/\1/p' "$file")
 

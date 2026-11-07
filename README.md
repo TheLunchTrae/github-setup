@@ -27,11 +27,11 @@ Exempt means the rules are skipped entirely for that actor, not offered as a man
 
 ### npm package tags
 
-Opt-in with `--npm`, from `rulesets/npm/`. Only admins can create release tags, and no tag can be moved or deleted.
+Opt-in with `--npm`, from `rulesets/npm/`. Only admins can create release tags, and no tag can be moved or deleted. Tags created by Actions with `GITHUB_TOKEN` (release-please, changesets, semantic-release) are blocked unless that app or a deploy key is added to the `Version Tags: Block Creation` bypass.
 
 | Ruleset | Rule | Bypass |
 | --- | --- | --- |
-| Tags: Block Creation | Block creating tags other than `v*` | None |
+| Other Tags: Block Creation | Block creating tags other than `v*` | None |
 | Version Tags: Block Creation | Block creating `v*` tags | Repository admins, exempt |
 | Tags: Block Updates and Deletion | Block moving or deleting any tag | None |
 
