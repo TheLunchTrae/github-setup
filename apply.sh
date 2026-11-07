@@ -4,11 +4,12 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Usage: ./apply.sh OWNER/REPO [--check CONTEXT]... [--dry-run]
+Usage: ./apply.sh OWNER/REPO [--check CONTEXT]... [--npm] [--dry-run]
 
   --check CONTEXT  Required status check context (job name as shown on PRs).
                    Repeat for each check. Without any, the
                    "Main: Require Status Checks" ruleset is skipped.
+  --npm            Also apply the npm package tag rulesets in rulesets/npm.
   --dry-run        Print the write calls instead of making them.
 USAGE
 }
@@ -16,6 +17,7 @@ USAGE
 root=$(cd "$(dirname "$0")" && pwd)
 repo=""
 checks=()
+npm=false
 dry_run=false
 
 while (($#)); do
@@ -25,6 +27,7 @@ while (($#)); do
       checks+=("$2")
       shift 2
       ;;
+    --npm) npm=true; shift ;;
     --dry-run) dry_run=true; shift ;;
     -h | --help) usage; exit 0 ;;
     -*) usage >&2; exit 2 ;;
@@ -95,7 +98,13 @@ for check in ${checks[@]+"${checks[@]}"}; do
   checks_json+="${checks_json:+, }{ \"context\": \"$check\" }"
 done
 
-for file in "$root"/rulesets/*.json; do
+files=("$root"/rulesets/*.json)
+if $npm; then
+  files+=("$root"/rulesets/npm/*.json)
+fi
+
+for file in "${files[@]}"; do
+  [[ -e $file ]] || continue
   body=$(<"$file")
   name=$(sed -n 's/^  "name": "\(.*\)",$/\1/p' "$file")
 
