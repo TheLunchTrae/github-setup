@@ -17,7 +17,7 @@ All target the default branch. Rules are split so each can be bypassed on its ow
 | --- | --- | --- |
 | Main: Block Creation and Deletion | Block creating or deleting the default branch | None |
 | Main: Block Force Pushes | Block force pushes | None |
-| Main: Require PR | Require a PR, rebase merge only | None |
+| Main: Require PR | Require a PR, squash merge only | None |
 | Main: Require Approval | Require 1 approving review | Repository admins, exempt |
 | Main: Require Code Owner Review | Require a CODEOWNERS review | Repository admins, exempt |
 | Main: Require Status Checks | Require the `--check` contexts to pass | Repository admins, exempt |
@@ -28,7 +28,7 @@ Rulesets on private repos need GitHub Pro (personal) or Team (org); the script s
 
 ## Settings
 
-- `settings/repo.json`: rebase merge only, auto-delete head branches, update-branch button, auto-merge off, web commit sign-off, Projects off.
+- `settings/repo.json`: squash merge only (PR title and body), auto-delete head branches, update-branch button, auto-merge off, web commit sign-off, Projects off.
 - `settings/actions-permissions.json`: Actions on, all actions allowed.
 - `settings/actions-workflow-permissions.json`: read-only `GITHUB_TOKEN`, workflows can't approve PRs.
 - Dependabot alerts and security updates on. Public repos also get secret scanning, push protection and private vulnerability reporting.
